@@ -1,0 +1,14 @@
+{
+        "id": "{2A56005E-635C-4398-AC67-5724507C86D9}",
+        "name": "KH_LEDWiFiController",
+        "type": 3,
+        "vendor": "KH-Solutions",
+        "aliases":
+        [
+                "LED WiFi Controller (LD382/LD741)"
+        ],
+        "parentRequirements": [],
+        "childRequirements": [],
+        "implemented": [],
+        "prefix": "LEDWiFi"
+}

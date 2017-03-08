@@ -1,0 +1,14 @@
+{
+        "elements":
+        [
+                { "name": "ControllerIP",  "type": "ValidationTextBox",   "caption": "WiFi Controller IP" },
+                { "name": "Debug",         "type": "CheckBox",            "caption": "Debug" },
+                { "name": "WhiteChannel",  "type": "CheckBox",            "caption": "Warm weiß" },
+
+ 
+        ],
+		"status":
+		[
+			{ "code": 201, "icon": "error", "caption": "WiFi Controller IP im falschen Format (Bsp: 127.0.0.1 - kein HTTP://)" },
+		]
+}
