@@ -22,6 +22,7 @@ class KH_LEDWiFiController extends IPSModule
         if (!IPS_VariableProfileExists("LEDWiFi_Mode"))
         {
             IPS_CreateVariableProfile("LEDWiFi_Mode", 1);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 0, "Manuell", "", 0x000000);
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 37, "7-stufiger Farbdurchlauf", "", 0x000000);
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 38, "Rot pulsierend", "", 0xff0000);
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 39, "Grün pulsierend", "", 0x00ff00);
@@ -32,15 +33,15 @@ class KH_LEDWiFiController extends IPSModule
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 44, "Rot Grün pulsierend", "", 0xf0f000);
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 45, "Rot Blau pulsierend", "", 0xf000f0);
 			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 46, "Grün Blau pulsierend", "", 0x00f0f0);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 10, "7-stufig blitzend", "", 0xa0a0a0);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 11, "Rot blitzend", "", 0xff0000);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 12, "Grün blitzend", "", 0x00ff00);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 13, "Blau blitzend", "", 0x0000ff);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 14, "Gelb blitzend", "", 0xffff00);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 15, "Türkis blitzend", "", 0x00ffff);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 16, "Violett blitzend", "", 0xff00ff);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 17, "Weiss blitzend", "", 0xffffff);
-			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 18, "7-stufiger Farbwechsel", "", 0xa0a0a0);			
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 47, "7-stufig blitzend", "", 0xa0a0a0);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 48, "Rot blitzend", "", 0xff0000);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 49, "Grün blitzend", "", 0x00ff00);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 50, "Blau blitzend", "", 0x0000ff);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 51, "Gelb blitzend", "", 0xffff00);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 52, "Türkis blitzend", "", 0x00ffff);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 53, "Violett blitzend", "", 0xff00ff);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 54, "Weiss blitzend", "", 0xffffff);
+			IPS_SetVariableProfileAssociation("LEDWiFi_Mode", 55, "7-stufiger Farbwechsel", "", 0xa0a0a0);			
         }
 
         // --------------------------------------------------------
@@ -154,8 +155,13 @@ class KH_LEDWiFiController extends IPSModule
 		$switchFunction = array(0x61,0x00,0x00,0x0f);
 
 		$actualMode = GetValue($this->GetIDForIdent("Mode"));
-		$actualSpeed = GetValue($this->GetIDForIdent("Speed"));
+		$actualSpeed = 100 - GetValue($this->GetIDForIdent("Speed"));
 
+		if ($actualSpeed > 100)
+			$actualSpeed = 100;
+		if ($actualSpeed < 1)
+			$actualSpeed = 1;
+		
 		$switchFunction[1] = $actualMode; // Mode
 		$switchFunction[2] = $actualSpeed; // Speed
 		
@@ -196,17 +202,23 @@ class KH_LEDWiFiController extends IPSModule
 			IPS_LogMessage($this->moduleName,"Keine Verbindung zu '".$path."' möglich.");
 			return;
 		}
-
+		else
+			IPS_LogMessage($this->moduleName,"Verbindung aufgebaut '".$path."'");
+			
+		$sendThis = "";
+			
 		foreach($values as $value)
 		{
-			fwrite($sockID,chr($value));
+			$sendThis .= chr($value);
 			$datas[] = $value;
 		}
 		
 		$sig = $this->getSignature($values);
 		
-		fwrite($sockID,chr($sig));
+		$sendThis .= chr($sig);
 		$datas[] = $sig;
+		
+		fwrite($sockID,$sendThis);
 		
 		if ($this->ReadPropertyBoolean("Debug"))
 			IPS_LogMessage($this->moduleName,"Sende Daten=".join(",",$datas));
@@ -216,7 +228,7 @@ class KH_LEDWiFiController extends IPSModule
 	
 	private function getSignature($values)
 	{
-		$signature = 97+array_sum($values)+15;
+		$signature = array_sum($values);	
 		$signature = dechex($signature);
 		$signature = substr($signature, -2);
 		$signature = hexdec($signature);
