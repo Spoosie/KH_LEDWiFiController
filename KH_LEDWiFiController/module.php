@@ -122,6 +122,16 @@ class KH_LEDWiFiController extends IPSModule
 				{
 					IPS_LogMessage($this->moduleName,"Schalte AN");
 					$this->sendData($switchOn);
+// Code damit nach der aktivierung der LEDs gleich die richtigen Daten vorliegen.
+// Funzt aber nicht sooo gut. :(
+/*
+					usleep(500);
+					// Jetzt den aktuelle Modus setzen
+					if (GetValue($this->GetIDForIdent("Mode")) == 0)
+						$this->sendColorMix();
+					else
+						$this->sendProgrammMix();						
+*/
 				}
 				else
 				{
@@ -139,7 +149,7 @@ class KH_LEDWiFiController extends IPSModule
 			case "Mode":
 				IPS_LogMessage($this->moduleName,"Schalte Modus");
 								
-				IPS_SetDisabled($this->GetIDForIdent("Speed"),$Value);
+				IPS_SetDisabled($this->GetIDForIdent("Speed"),!$Value);
 				IPS_SetDisabled($this->GetIDForIdent("Color"),$Value);
 				IPS_SetDisabled($this->GetIDForIdent("Brightness"),$Value);
 				
