@@ -2,7 +2,7 @@
 class KH_LEDWiFiController extends IPSModule
 {
     var $moduleName = "LEDWiFiController";
-
+	
     public function Create()
     {
         //Never delete this line!
@@ -132,10 +132,28 @@ class KH_LEDWiFiController extends IPSModule
 				SetValue($this->GetIDForIdent($Ident), $Value);
 				break;
 			case "Speed":
-			case "Mode":
-				IPS_LogMessage($this->moduleName,"Schalte Modus/Geschwindigkeit");
+				IPS_LogMessage($this->moduleName,"Schalte Geschwindigkeit");
 				SetValue($this->GetIDForIdent($Ident), $Value);
 				$this->sendProgrammMix();
+				break;
+			case "Mode":
+				IPS_LogMessage($this->moduleName,"Schalte Modus");
+								
+				IPS_SetDisabled($this->GetIDForIdent("Speed"),$Value);
+				IPS_SetDisabled($this->GetIDForIdent("Color"),$Value);
+				IPS_SetDisabled($this->GetIDForIdent("Brightness"),$Value);
+				
+				if ($this->ReadPropertyBoolean("WhiteChannel"))
+					IPS_SetDisabled($this->GetIDForIdent("WarmWhite"),$Value);				
+				
+				SetValue($this->GetIDForIdent($Ident), $Value);
+				
+				// Im manuellen Modus wieder zurück auf die Einstellung schalten. 
+				if ($Value == 0)
+					$this->sendColorMix();
+				else
+					$this->sendProgrammMix();
+				
 				break;
 			case "Color":
 			case "Brightness":
@@ -195,11 +213,11 @@ class KH_LEDWiFiController extends IPSModule
 	private function sendData($values)
 	{
 		$path = "tcp://".$this->ReadPropertyString("ControllerIP");
-		$sockID = @fsockopen($path, 5577);
+		$sockID = @fsockopen($path, 5577,$errno, $errstr, 5);
 		
 		if (!$sockID)
 		{
-			IPS_LogMessage($this->moduleName,"Keine Verbindung zu '".$path."' möglich.");
+			IPS_LogMessage($this->moduleName,$path." -> $errstr ($errno)");
 			return;
 		}
 		else
